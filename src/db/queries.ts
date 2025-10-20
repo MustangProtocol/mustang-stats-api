@@ -1,24 +1,11 @@
 import { getDb } from './connection';
-import { branchStats, stabilityPoolEvents, globalStats, prices } from './schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { branchStats, globalStats, prices } from './schema';
+import { eq, desc } from 'drizzle-orm';
 
 export interface BranchStats {
-  coll_active: string;
-  coll_default: string;
-  coll_price: string;
-  debt_recorded: string;
-  debt_default: string;
+  branch_id: string;
+  branch_name: string;
   sp_deposits: string;
-  interest_accrual_1y: string;
-  interest_pending: string;
-  batch_management_fees_pending: string;
-  coll: string;
-  coll_value: string;
-  debt_pending: string;
-  debt_active: string;
-  debt: string;
-  value_locked: string;
-  interest_rate_avg: string;
   sp_apy: string;
   apy_avg: string;
   sp_apy_avg_1d: string;
@@ -39,7 +26,7 @@ export interface GlobalStats {
 /**
  * Update or insert branch statistics
  */
-export async function updateBranchStats(branch: string, stats: Partial<BranchStats>) {
+export async function updateBranchStats(branch: { id: number, name: string }, stats: Partial<BranchStats>) {
   const db = getDb();
 
   try {
@@ -47,59 +34,39 @@ export async function updateBranchStats(branch: string, stats: Partial<BranchSta
     const existingBranch = await db
       .select()
       .from(branchStats)
-      .where(eq(branchStats.branchName, branch))
+      .where(eq(branchStats.branchId, branch.id))
       .limit(1);
 
     if (existingBranch.length > 0) {
-      // Update existing
+      // Update existing - only update provided fields
+      const updateData: any = { updatedAt: new Date() };
+      
+      if (stats.sp_deposits !== undefined) updateData.spDeposits = stats.sp_deposits;
+      if (stats.sp_apy !== undefined) updateData.spApy = stats.sp_apy;
+      if (stats.apy_avg !== undefined) updateData.apyAvg = stats.apy_avg;
+      if (stats.sp_apy_avg_1d !== undefined) updateData.spApyAvg1d = stats.sp_apy_avg_1d;
+      if (stats.sp_apy_avg_7d !== undefined) updateData.spApyAvg7d = stats.sp_apy_avg_7d;
+
       await db
         .update(branchStats)
-        .set({
-          collActive: stats.coll_active as any,
-          collDefault: stats.coll_default as any,
-          collPrice: stats.coll_price as any,
-          debtRecorded: stats.debt_recorded as any,
-          debtDefault: stats.debt_default as any,
-          spDeposits: stats.sp_deposits as any,
-          interestAccrual1y: stats.interest_accrual_1y as any,
-          interestPending: stats.interest_pending as any,
-          batchManagementFeesPending: stats.batch_management_fees_pending as any,
-          debtPending: stats.debt_pending as any,
-          debtActive: stats.debt_active as any,
-          interestRateAvg: stats.interest_rate_avg as any,
-          spApy: stats.sp_apy as any,
-          apyAvg: stats.apy_avg as any,
-          spApyAvg1d: stats.sp_apy_avg_1d as any,
-          spApyAvg7d: stats.sp_apy_avg_7d as any,
-          updatedAt: new Date(),
-        })
-        .where(eq(branchStats.branchName, branch));
+        .set(updateData)
+        .where(eq(branchStats.branchId, branch.id));
     } else {
-      // Insert new
+      // Insert new - require sp_deposits for new records
       await db.insert(branchStats).values({
-        branchName: branch,
-        collActive: stats.coll_active as any,
-        collDefault: stats.coll_default as any,
-        collPrice: stats.coll_price as any,
-        debtRecorded: stats.debt_recorded as any,
-        debtDefault: stats.debt_default as any,
-        spDeposits: stats.sp_deposits as any,
-        interestAccrual1y: stats.interest_accrual_1y as any,
-        interestPending: stats.interest_pending as any,
-        batchManagementFeesPending: stats.batch_management_fees_pending as any,
-        debtPending: stats.debt_pending as any,
-        debtActive: stats.debt_active as any,
-        interestRateAvg: stats.interest_rate_avg as any,
-        spApy: stats.sp_apy as any,
-        apyAvg: stats.apy_avg as any,
-        spApyAvg1d: stats.sp_apy_avg_1d as any,
-        spApyAvg7d: stats.sp_apy_avg_7d as any,
+        branchId: branch.id,
+        branchName: branch.name,
+        spDeposits: stats.sp_deposits || '0',
+        spApy: stats.sp_apy || '0',
+        apyAvg: stats.apy_avg || '0',
+        spApyAvg1d: stats.sp_apy_avg_1d || '0',
+        spApyAvg7d: stats.sp_apy_avg_7d || '0',
       });
     }
 
-    console.log(`✅ Updated stats for ${branch}`);
+    console.log(`✅ Updated stats for ${branch.name}`);
   } catch (error) {
-    console.error(`Error updating stats for ${branch}:`, error);
+    console.error(`Error updating stats for ${branch.name}:`, error);
     throw error;
   }
 }
@@ -169,44 +136,6 @@ export async function updatePrices(priceData: Record<string, string>) {
 }
 
 /**
- * Log a stability pool event
- */
-export async function logEvent(
-  branch: string,
-  eventType: string,
-  data: {
-    amount?: string;
-    oldValue?: string;
-    newValue?: string;
-    txHash?: string;
-    blockNumber?: number;
-    logIndex?: number;
-    customData?: Record<string, unknown>;
-  }
-) {
-  const db = getDb();
-
-  try {
-    await db.insert(stabilityPoolEvents).values({
-      branchName: branch,
-      eventType,
-      amount: data.amount as any,
-      oldValue: data.oldValue as any,
-      newValue: data.newValue as any,
-      transactionHash: data.txHash,
-      blockNumber: data.blockNumber ? BigInt(data.blockNumber) : null,
-      logIndex: data.logIndex,
-      data: data.customData ? JSON.stringify(data.customData) : null,
-    });
-
-    console.log(`✅ Logged event: ${eventType} for ${branch}`);
-  } catch (error) {
-    console.error(`Error logging event for ${branch}:`, error);
-    throw error;
-  }
-}
-
-/**
  * Get latest statistics or historical records
  */
 export async function getLatestStats(limitCount: number = 1): Promise<GlobalStats | GlobalStats[]> {
@@ -229,31 +158,10 @@ export async function getLatestStats(limitCount: number = 1): Promise<GlobalStat
     // Format response
     const branches: Record<string, BranchStats> = {};
     for (const branch of branchStatsResult) {
-      const collValue = (
-        BigInt(branch.collActive.toString()) * BigInt(branch.collPrice.toString())
-      ).toString();
-
-      const valueLockedBigInt =
-        BigInt(branch.collActive.toString()) * BigInt(branch.collPrice.toString()) +
-        BigInt(branch.debtActive.toString());
-
       branches[branch.branchName] = {
-        coll_active: branch.collActive.toString(),
-        coll_default: branch.collDefault.toString(),
-        coll_price: branch.collPrice.toString(),
-        debt_recorded: branch.debtRecorded.toString(),
-        debt_default: branch.debtDefault.toString(),
+        branch_id: branch.branchId.toString(),
+        branch_name: branch.branchName,
         sp_deposits: branch.spDeposits.toString(),
-        interest_accrual_1y: branch.interestAccrual1y.toString(),
-        interest_pending: branch.interestPending.toString(),
-        batch_management_fees_pending: branch.batchManagementFeesPending.toString(),
-        coll: branch.collActive.toString(),
-        coll_value: collValue,
-        debt_pending: branch.debtPending.toString(),
-        debt_active: branch.debtActive.toString(),
-        debt: branch.debtActive.toString(),
-        value_locked: valueLockedBigInt.toString(),
-        interest_rate_avg: branch.interestRateAvg.toString(),
         sp_apy: branch.spApy.toString(),
         apy_avg: branch.apyAvg.toString(),
         sp_apy_avg_1d: branch.spApyAvg1d.toString(),
@@ -292,33 +200,6 @@ export async function getLatestStats(limitCount: number = 1): Promise<GlobalStat
     }
   } catch (error) {
     console.error('Error fetching stats:', error);
-    throw error;
-  }
-}
-
-/**
- * Get event logs with optional filtering
- */
-export async function getEventLogs(
-  branch?: string,
-  eventType?: string,
-  limitCount: number = 100
-) {
-  const db = getDb();
-
-  try {
-    // Build dynamic where conditions
-    const conditions = [];
-    if (branch) conditions.push(eq(stabilityPoolEvents.branchName, branch));
-    if (eventType) conditions.push(eq(stabilityPoolEvents.eventType, eventType));
-    
-    if (conditions.length > 0) {
-      return await db.select().from(stabilityPoolEvents).where(conditions.length === 1 ? conditions[0] : and(...conditions)).orderBy(desc(stabilityPoolEvents.createdAt)).limit(limitCount);
-    } else {
-      return await db.select().from(stabilityPoolEvents).orderBy(desc(stabilityPoolEvents.createdAt)).limit(limitCount);
-    }
-  } catch (error) {
-    console.error('Error fetching event logs:', error);
     throw error;
   }
 }

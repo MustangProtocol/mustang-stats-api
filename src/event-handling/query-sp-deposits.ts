@@ -4,18 +4,72 @@ import { getPublicClient } from '@/src/utils/client';
 import { getContracts } from '@/src/lib/contracts';
 import { ORIGIN_BLOCK } from '../utils/constants';
 import { getDb } from '@/src/db/connection';
-import { eventQueryState, spDepositEvents } from '@/src/db/schema';
+import { eventQueryState, spDepositEvents, liquidationLogs, interestRewardsLogs, spDepositSnapshots } from '@/src/db/schema';
 import { and, eq, gte, lte, SQL } from 'drizzle-orm';
-import type { SPDepositUpdatedLogs } from './types';
+import type { InterestRewardLog, LiquidationLogs, SPDepositUpdatedLogs } from './types';
 
 const EVENT_TYPE = 'SP_DEPOSIT_UPDATED';
+
+export async function getStabilityPoolTotalDepositsAndCollBalances() {
+  const client = getPublicClient();
+  const contracts = getContracts();
+  
+  const results = await client.multicall({
+    allowFailure: false,
+    contracts: contracts.collaterals.map(collateral => [
+      {
+        ...collateral.contracts.StabilityPool,
+        functionName: 'getTotalBoldDeposits',
+      },
+      {
+        ...collateral.contracts.StabilityPool,
+        functionName: 'getCollBalance',
+      }
+    ]).flat(),
+  });
+
+  const latestBlock = await client.getBlockNumber();
+  const block = await client.getBlock({ blockNumber: latestBlock });
+
+  const data = contracts.collaterals.map((collateral, index) => ({
+    branchId: collateral.collIndex,
+    stabilityPool: collateral.contracts.StabilityPool.address,
+    totalBoldDeposits: results[index * 2]!.toString(),
+    collBalance: results[index * 2 + 1]!.toString(),
+    blockNumber: latestBlock.toString(),
+    blockTimestamp: block.timestamp.toString() ?? '',
+  }));
+
+  return data;
+}
+
+export async function queryAndSaveStabilityPoolTotalDepositsAndCollBalancesToDatabase() {
+  const db = getDb();
+  const data = await getStabilityPoolTotalDepositsAndCollBalances();
+
+  try {
+    const result = await db.insert(spDepositSnapshots).values(data.map(item => ({
+      branchId: item.branchId,
+      stabilityPool: item.stabilityPool,
+      totalBoldDeposits: item.totalBoldDeposits,
+      totalCollBalance: item.collBalance,
+      blockNumber: BigInt(item.blockNumber),
+      blockTimestamp: BigInt(item.blockTimestamp),
+    }))).returning();
+
+    console.log(`Saved ${result.length} SP deposit snapshots to database`);
+  } catch (error) {
+    console.error('Error saving SP deposit snapshots to database:', error);
+    throw error;
+  }
+}
 
 export async function queryAndLogStabilityPoolDepositUpdatedEvents() {
   const lastQueriedData = await queryStabilityPoolDepositUpdatedEvents();
   
   if (lastQueriedData.logs.length > 0) {
-    await saveEventsToDatabase(lastQueriedData.logs);
-    await updateEventQueryState(lastQueriedData.lastQueriedFromBlock, lastQueriedData.lastQueriedToBlock);
+    await saveSPDepositedEventsToDatabase(lastQueriedData.logs);
+    await updateEventQueryState(EVENT_TYPE, lastQueriedData.lastQueriedFromBlock, lastQueriedData.lastQueriedToBlock);
   }
 
   return lastQueriedData;
@@ -25,7 +79,7 @@ export async function queryStabilityPoolDepositUpdatedEvents() {
   const client = getPublicClient();
   const contracts = getContracts();
 
-  let queryState = await getEventQueryState();
+  let queryState = await getEventQueryState(EVENT_TYPE);
 
   const fromBlock = queryState.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
@@ -87,7 +141,7 @@ export async function queryStabilityPoolDepositUpdatedEventsWithinTimestampRange
   return await db.select().from(spDepositEvents).orderBy(spDepositEvents.createdAt);
 }
 
-export async function saveEventsToDatabase(logs: SPDepositUpdatedLogs[]) {
+export async function saveSPDepositedEventsToDatabase(logs: SPDepositUpdatedLogs[]) {
   const db = getDb();
 
   try {
@@ -111,14 +165,57 @@ export async function saveEventsToDatabase(logs: SPDepositUpdatedLogs[]) {
   }
 }
 
-async function getEventQueryState() {
+export async function saveInterestRewardsToDatabase(logs: InterestRewardLog[]) {
+  const db = getDb();
+  try {
+    await db.insert(interestRewardsLogs).values(logs.map(log => ({
+      branchId: log.branchId,
+      stabilityPool: log.stabilityPool,
+      amount: log.amount,
+      blockNumber: BigInt(log.blockNumber),
+      blockTimestamp: BigInt(log.blockTimestamp),
+      transactionHash: log.transactionHash,
+    })));
+    console.log(`Saved ${logs.length} interest rewards (ERC20 transfer logs) to database`);
+  } catch (error) {
+    console.error('Error saving interest rewards (ERC20 transfer logs) to database:', error);
+    throw error;
+  }
+}
+
+export async function saveLiquidationEventsToDatabase(logs: LiquidationLogs[]) {
+  const db = getDb();
+  try {
+    await db.insert(liquidationLogs).values(logs.map(log => ({
+      debtOffsetBySP: log.debtOffsetBySP,
+      debtRedistributed: log.debtRedistributed,
+      boldGasCompensation: log.boldGasCompensation,
+      collGasCompensation: log.collGasCompensation,
+      collSentToSP: log.collSentToSP,
+      collRedistributed: log.collRedistributed,
+      collSurplus: log.collSurplus,
+      L_ETH: log.L_ETH,
+      L_boldDebt: log.L_boldDebt,
+      price: log.price,
+      blockNumber: BigInt(log.blockNumber),
+      blockTimestamp: BigInt(log.blockTimestamp),
+      transactionHash: log.transactionHash,
+    })));
+    console.log(`Saved ${logs.length} liquidation events to database`);
+  } catch (error) {
+    console.error('Error saving liquidation events to database:', error);
+    throw error;
+  }
+}
+
+async function getEventQueryState(eventType: string) {
   const db = getDb();
 
   try {
     const state = await db
       .select()
       .from(eventQueryState)
-      .where(eq(eventQueryState.eventType, EVENT_TYPE))
+      .where(eq(eventQueryState.eventType, eventType))
       .limit(1);
 
     if (state.length > 0) {
@@ -141,14 +238,14 @@ async function getEventQueryState() {
   }
 }
 
-async function updateEventQueryState(fromBlock: string, toBlock: string) {
+async function updateEventQueryState(eventType: string, fromBlock: string, toBlock: string) {
   const db = getDb();
 
   try {
     const existing = await db
       .select()
       .from(eventQueryState)
-      .where(eq(eventQueryState.eventType, EVENT_TYPE))
+      .where(eq(eventQueryState.eventType, eventType))
       .limit(1);
 
     if (existing.length > 0) {
@@ -159,18 +256,18 @@ async function updateEventQueryState(fromBlock: string, toBlock: string) {
           lastQueriedToBlock: toBlock,
           updatedAt: new Date(),
         })
-        .where(eq(eventQueryState.eventType, EVENT_TYPE));
+        .where(eq(eventQueryState.eventType, eventType));
     } else {
       await db.insert(eventQueryState).values({
-        eventType: EVENT_TYPE,
+        eventType,
         lastQueriedFromBlock: fromBlock,
         lastQueriedToBlock: toBlock,
       });
     }
 
-    console.log(`Updated event query state: from ${fromBlock} to ${toBlock}`);
+    console.log(`Updated event query state for ${eventType}: from ${fromBlock} to ${toBlock}`);
   } catch (error) {
-    console.error('Error updating event query state:', error);
+    console.error(`Error updating event query state for ${eventType}:`, error);
     throw error;
   }
 }

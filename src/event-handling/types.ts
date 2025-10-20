@@ -11,6 +11,15 @@ export interface ERC20TransferLogs {
   transactionHash: string
 }
 
+export interface InterestRewardLog {
+  branchId: CollIndex
+  stabilityPool: Address
+  amount: string
+  blockNumber: string
+  blockTimestamp: string
+  transactionHash: string
+}
+
 export interface SPDepositUpdatedLogs {
   depositor: Address
   depositAmount: string
@@ -22,4 +31,20 @@ export interface SPDepositUpdatedLogs {
     branchId: CollIndex
     address: Address
   }
+}
+
+export interface LiquidationLogs {
+  debtOffsetBySP: string
+  debtRedistributed: string
+  boldGasCompensation: string
+  collGasCompensation: string
+  collSentToSP: string
+  collRedistributed: string
+  collSurplus: string
+  L_ETH: string
+  L_boldDebt: string
+  price: string
+  blockNumber: string
+  blockTimestamp: string
+  transactionHash: string
 }

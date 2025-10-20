@@ -1,4 +1,4 @@
-import { updateGlobalStats, updateBranchStats, updatePrices, logEvent } from './queries';
+import { updateGlobalStats, updateBranchStats, updatePrices } from './queries';
 
 // Sample data from Liquity API
 const sampleData = {
@@ -10,54 +10,24 @@ const sampleData = {
   max_sp_apy: '0.04610593992950242',
   branch: {
     WETH: {
-      coll_active: '6577.728311520836877562',
-      coll_default: '0',
-      coll_price: '3826.25',
-      debt_recorded: '12127344.321243159179124336',
-      debt_default: '0',
+      branch_id: 0,
       sp_deposits: '9425337.28387769584171724',
-      interest_accrual_1y: '375694.433899158579944924',
-      interest_pending: '5.003540786328215487',
-      batch_management_fees_pending: '12.135807959020457686',
-      debt_pending: '17.139348745348673173',
-      debt_active: '12127361.460591904527797509',
-      interest_rate_avg: '0.03097907447716347',
       sp_apy: '0.029895038971851526',
       apy_avg: '0.029895038971851526',
       sp_apy_avg_1d: '0.04721625355705536',
       sp_apy_avg_7d: '0.07671293678371476',
     },
     wstETH: {
-      coll_active: '22209.377443089903020673',
-      coll_default: '0',
-      coll_price: '4625.604321169860928063',
-      debt_recorded: '30400002.975056089357256065',
-      debt_default: '0',
+      branch_id: 1,
       sp_deposits: '23033860.299948901205448804',
-      interest_accrual_1y: '1415997.039111992737518864',
-      interest_pending: '18.858408055144499929',
-      batch_management_fees_pending: '11.23678106891296079',
-      debt_pending: '30.095189124057460719',
-      debt_active: '30400033.070245213414716784',
-      interest_rate_avg: '0.046578799300647306',
       sp_apy: '0.046105939929502416',
       apy_avg: '0.046105939929502416',
       sp_apy_avg_1d: '0.049868406726385664',
       sp_apy_avg_7d: '0.4878191623841478',
     },
     rETH: {
-      coll_active: '3861.486064901388351802',
-      coll_default: '0',
-      coll_price: '4376.82037491232893625',
-      debt_recorded: '4668071.480506621792721298',
-      debt_default: '0',
+      branch_id: 2,
       sp_deposits: '4143810.16429379428561403',
-      interest_accrual_1y: '252348.718917407278733967',
-      interest_pending: '3.360808661380994961',
-      batch_management_fees_pending: '17.082754007906298129',
-      debt_pending: '20.44356266928729309',
-      debt_active: '4668091.924069291080014388',
-      interest_rate_avg: '0.054058215438360233',
       sp_apy: '0.045673313130721135',
       apy_avg: '0.045673313130721135',
       sp_apy_avg_1d: '0.04576235597410636',
@@ -93,16 +63,15 @@ async function seedDatabase() {
 
     // Update branch stats for each collateral
     for (const [branchName, stats] of Object.entries(sampleData.branch)) {
-      await updateBranchStats(branchName, stats as any);
-      console.log(`✅ ${branchName} branch stats inserted`);
-
-      // Log an initial sync event
-      await logEvent(branchName, 'STATS_SYNC', {
-        customData: {
-          source: 'liquity-api',
-          syncType: 'initial',
-        },
+      const branchId = (stats as any).branch_id;
+      await updateBranchStats(branchId, branchName, {
+        sp_deposits: (stats as any).sp_deposits,
+        sp_apy: (stats as any).sp_apy,
+        apy_avg: (stats as any).apy_avg,
+        sp_apy_avg_1d: (stats as any).sp_apy_avg_1d,
+        sp_apy_avg_7d: (stats as any).sp_apy_avg_7d,
       });
+      console.log(`✅ ${branchName} branch stats inserted`);
     }
 
     // Update prices
