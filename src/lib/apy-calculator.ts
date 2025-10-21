@@ -1,3 +1,4 @@
+import { formatUnits } from 'viem';
 import { getDb } from '../db/connection';
 import { interestRewardsLogs, liquidationLogs, spDepositSnapshots } from '../db/schema';
 import { and, gte, lte } from 'drizzle-orm';
@@ -75,7 +76,7 @@ export async function calculateApyForBranch(
     }, BigInt(0));
 
     // Calculate sum of (collSentToSP * price)
-    const totalCollateralValueBigInt = liquidations.reduce((sum, liquidation) => {
+    const totalLiquidationRewardsBigInt = liquidations.reduce((sum, liquidation) => {
       const collValue = BigInt(liquidation.collSentToSP.toString()) * BigInt(liquidation.price.toString());
       return sum + collValue;
     }, BigInt(0));
@@ -92,7 +93,7 @@ export async function calculateApyForBranch(
     // Calculate APY
     let apyBigInt = BigInt(0);
     if (averageBoldDepositsBigInt > BigInt(0)) {
-      const numerator = totalInterestRewardsBigInt + totalCollateralValueBigInt;
+      const numerator = totalInterestRewardsBigInt + totalLiquidationRewardsBigInt;
       // Scale up to maintain precision in decimal calculation
       apyBigInt = (numerator * BigInt(10 ** 18)) / averageBoldDepositsBigInt;
     }
@@ -100,7 +101,7 @@ export async function calculateApyForBranch(
     return {
       branchId,
       totalInterestRewards: totalInterestRewardsBigInt.toString(),
-      totalCollBalance: totalCollateralValueBigInt.toString(),
+      totalCollBalance: totalLiquidationRewardsBigInt.toString(),
       totalBoldDepositAvg: averageBoldDepositsBigInt.toString(),
       apy: apyBigInt.toString(),
       periodStart: fromTimestamp,
@@ -148,8 +149,7 @@ export async function calculateApyForBranches(
  */
 export function formatApyAsPercentage(apyRaw: string): string {
   const apyBigInt = BigInt(apyRaw);
-  const percentageBigInt = (apyBigInt * BigInt(100)) / BigInt(10 ** 18);
-  const decimalPart = ((apyBigInt * BigInt(10000)) / BigInt(10 ** 18)) % BigInt(100);
-  
-  return `${percentageBigInt.toString()}.${decimalPart.toString().padStart(2, '0')}`;
+  const formattedApy = formatUnits(apyBigInt, 18);
+  const percentage = Number(formattedApy) * 100;
+  return percentage.toFixed(2);
 }

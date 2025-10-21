@@ -7,6 +7,7 @@ import { isAddressEqual, parseAbiItem, zeroAddress } from 'viem';
 import { getEventQueryStateByType, updateEventQueryStateInDb } from './db';
 import { saveInterestRewardsToDatabase, saveLiquidationEventsToDatabase } from './query-sp-deposits';
 import type { CollIndex } from '../types';
+import { TroveManager } from '../abi/TroveManager';
 
 const TRANSFER_EVENT_TYPE = 'TRANSFER';
 const LIQUIDATION_EVENT_TYPE = 'LIQUIDATION';
@@ -36,6 +37,8 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
 
   const events = await client.getContractEvents(filter);
 
+  console.log("Found", events.length, "interest reward minted (ERC20 transfer) events");
+
   const recentLogs = await Promise.all(events.map(async event => {
     const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
     return {
@@ -58,7 +61,9 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
 export async function queryAndLogStabilityPoolInterestRewardMintedEvents() {
   const lastQueriedData = await queryStabilityPoolInterestRewardMintedEvents();
   if (lastQueriedData.logs.length > 0) {
+    console.log("Saving", lastQueriedData.logs.length, "interest reward events to database...");
     await saveInterestRewardsToDatabase(lastQueriedData.logs);
+    console.log("Updated event query state for", TRANSFER_EVENT_TYPE);
     await updateEventQueryStateInDb(TRANSFER_EVENT_TYPE, lastQueriedData.lastQueriedFromBlock, lastQueriedData.lastQueriedToBlock);
   }
   return lastQueriedData;
@@ -76,7 +81,7 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
 
   const filter = await client.createContractEventFilter({
     address: contracts.collaterals.map(collateral => collateral.contracts.TroveManager.address),
-    abi: [parseAbiItem('event Liquidation(uint256 _debtOffsetBySP,uint256 _debtRedistributed,uint256 _boldGasCompensation,uint256 _collGasCompensation,uint256 _collSentToSP,uint256 _collRedistributed,uint256 _collSurplus,uint256 _L_ETH,uint256 _L_boldDebt,uint256 _price)')],
+    abi: TroveManager,
     eventName: 'Liquidation',
     strict: true,
     fromBlock,
@@ -84,6 +89,8 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
   });
 
   const events = await client.getContractEvents(filter);
+
+  console.log("Found", events.length, "liquidation events");
 
   const recentLogs = await Promise.all(events.map(async event => {
     const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
@@ -114,7 +121,9 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
 export async function queryAndLogStabilityPoolLiquidationRewardMintedEvents() {
   const lastQueriedData = await queryStabilityPoolLiquidationRewardMintedEvents();
   if (lastQueriedData.logs.length > 0) {
+    console.log("Saving", lastQueriedData.logs.length, "liquidation events to database...");
     await saveLiquidationEventsToDatabase(lastQueriedData.logs);
+    console.log("Updated event query state for", LIQUIDATION_EVENT_TYPE);
     await updateEventQueryStateInDb(LIQUIDATION_EVENT_TYPE, lastQueriedData.lastQueriedFromBlock, lastQueriedData.lastQueriedToBlock);
   }
   return lastQueriedData;
