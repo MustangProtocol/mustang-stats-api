@@ -99,8 +99,8 @@ bun run db:migrate
 
 # Seed data
 echo ""
-echo "Seeding database with initial data..."
-bun run src/db/seed.ts
+# echo "Seeding database with initial data..."
+# bun run src/db/seed.ts
 
 echo ""
 echo "✅ Setup complete!"
