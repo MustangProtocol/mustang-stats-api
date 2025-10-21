@@ -64,7 +64,7 @@ async function seedDatabase() {
     // Update branch stats for each collateral
     for (const [branchName, stats] of Object.entries(sampleData.branch)) {
       const branchId = (stats as any).branch_id;
-      await updateBranchStats(branchId, branchName, {
+      await updateBranchStats({ id: branchId, name: branchName }, {
         sp_deposits: (stats as any).sp_deposits,
         sp_apy: (stats as any).sp_apy,
         apy_avg: (stats as any).apy_avg,

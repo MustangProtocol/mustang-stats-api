@@ -21,11 +21,12 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createEventFilter({
+  const filter = await client.createContractEventFilter({
     address: contracts.BoldToken.address,
-    event: parseAbiItem('event Transfer(address indexed from,address indexed to,uint256 value)'),
+    abi: [parseAbiItem('event Transfer(address indexed from,address indexed to,uint256 value)')],
+    eventName: 'Transfer',
     strict: true,
-    fromBlock: ORIGIN_BLOCK,
+    fromBlock,
     toBlock: latestBlock,
     args: {
       to: contracts.collaterals.map(collateral => collateral.contracts.StabilityPool.address),
@@ -33,7 +34,7 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
     }
   });
 
-  const events = await client.getFilterLogs({ filter });
+  const events = await client.getContractEvents(filter);
 
   const recentLogs = await Promise.all(events.map(async event => {
     const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
@@ -73,15 +74,16 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createEventFilter({
+  const filter = await client.createContractEventFilter({
     address: contracts.collaterals.map(collateral => collateral.contracts.TroveManager.address),
-    event: parseAbiItem('event Liquidation(uint256 _debtOffsetBySP,uint256 _debtRedistributed,uint256 _boldGasCompensation,uint256 _collGasCompensation,uint256 _collSentToSP,uint256 _collRedistributed,uint256 _collSurplus,uint256 _L_ETH,uint256 _L_boldDebt,uint256 _price)'),
+    abi: [parseAbiItem('event Liquidation(uint256 _debtOffsetBySP,uint256 _debtRedistributed,uint256 _boldGasCompensation,uint256 _collGasCompensation,uint256 _collSentToSP,uint256 _collRedistributed,uint256 _collSurplus,uint256 _L_ETH,uint256 _L_boldDebt,uint256 _price)')],
+    eventName: 'Liquidation',
     strict: true,
-    fromBlock: ORIGIN_BLOCK,
+    fromBlock,
     toBlock: latestBlock,
   });
 
-  const events = await client.getFilterLogs({ filter });
+  const events = await client.getContractEvents(filter);
 
   const recentLogs = await Promise.all(events.map(async event => {
     const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;

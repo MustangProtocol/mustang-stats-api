@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { getLatestStats } from "./db/queries";
 import { getSPDepositEvents, getSPDepositEventsByBranch } from "./event-handling/db";
+import { PORT } from "./utils/env";
 
 const app = new Elysia();
 
@@ -102,10 +103,9 @@ app.get("/events/sp-deposits/branch/:branchId", async (context) => {
   }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
+app.listen(PORT, () => {
   console.log("Mustang Stats API");
-  console.log(`Server listening on http://localhost:${port}...`);
+  console.log(`Server listening on http://localhost:${PORT}...`);
 });
 
 export default app;

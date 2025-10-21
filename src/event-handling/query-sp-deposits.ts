@@ -13,20 +13,32 @@ const EVENT_TYPE = 'SP_DEPOSIT_UPDATED';
 export async function getStabilityPoolTotalDepositsAndCollBalances() {
   const client = getPublicClient();
   const contracts = getContracts();
-  
-  const results = await client.multicall({
-    allowFailure: false,
-    contracts: contracts.collaterals.map(collateral => [
-      {
-        ...collateral.contracts.StabilityPool,
-        functionName: 'getTotalBoldDeposits',
-      },
-      {
-        ...collateral.contracts.StabilityPool,
-        functionName: 'getCollBalance',
-      }
-    ]).flat(),
-  });
+
+  let results: bigint[] = [];
+  const calls = contracts.collaterals.map(collateral => [
+    {
+      ...collateral.contracts.StabilityPool,
+      functionName: 'getTotalBoldDeposits',
+    },
+    {
+      ...collateral.contracts.StabilityPool,
+      functionName: 'getCollBalance',
+    }
+  ]).flat();
+
+  try {
+    results = await client.multicall({
+      allowFailure: false,
+      contracts: calls,
+    }) as bigint[];
+  } catch (error) {
+    console.log("Error getting stability pool total deposits and collateral balances via multicall:", error);
+    console.log("Looping instead...")
+    for (const call of calls) {
+      const result = await client.readContract(call as any);
+      results.push(result as bigint);
+    }
+  }
 
   const latestBlock = await client.getBlockNumber();
   const block = await client.getBlock({ blockNumber: latestBlock });

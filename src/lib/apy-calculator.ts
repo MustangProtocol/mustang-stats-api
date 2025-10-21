@@ -84,9 +84,9 @@ export async function calculateApyForBranch(
     let averageBoldDepositsBigInt = BigInt(0);
     if (spSnapshots.length > 0) {
       const totalBoldDeposits = spSnapshots.reduce((sum, snapshot) => {
-        return sum + BigInt(snapshot.totalBoldDeposits.toString());
+        return sum + BigInt(Math.floor(Number(snapshot.totalBoldDeposits)) ?? '0');
       }, BigInt(0));
-      averageBoldDepositsBigInt = totalBoldDeposits / BigInt(spSnapshots.length);
+      averageBoldDepositsBigInt = totalBoldDeposits / BigInt(spSnapshots.length ?? 1);
     }
 
     // Calculate APY
