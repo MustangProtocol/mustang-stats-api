@@ -4,6 +4,8 @@ export const CONTRACT_ADDRESSES = {
   hintHelpers: "0xd4089e6f4c265f4695edf7c1ea423f92ec9603e0",
   multiTroveGetter: "0x6da0be66951460d517ab6fc407f33d12c4e48a9d",
   exchangeHelpers: "0x827e3a34e3e078dc103b11284de68fb5a8ddbe49",
+  governance: "0x0000000000000000000000000000000000000000",
+  weth: "0xeb41D53F14Cb9a67907f2b8b5DBc223944158cCb",
   branches: [
     {
       collIndex: 0,
