@@ -1,19 +1,5 @@
 {
-  "version": 2,
-  "installCommand": "bun install",
-  "buildCommand": "bun build src/index.ts --target=node --outdir=dist",
-  "builds": [
-    {
-      "src": "dist/index.js",
-      "use": "@vercel/node",
-      "config": { "includeFiles": ["dist/**"] }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/index.js",
-      "methods": ["GET"]
-    }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "curl -fsSL https://bun.sh/install | bash && ~/.bun/bin/bun install --frozen-lockfile",
+  "buildCommand": "~/.bun/bin/bun run build"
 }
