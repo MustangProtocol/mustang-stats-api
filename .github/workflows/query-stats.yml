@@ -1,40 +1,41 @@
-# name: Query Stats
+name: Query Stats
 
-# env:
-#   CI: true
-#   FORCE_COLOR: true
+env:
+  CI: true
+  FORCE_COLOR: true
 
-# on:
-#   schedule:
-#     - cron: "0 */6 * * *" # every 6 hours
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
 
-# jobs:
-#   query-stats:
-#     name: Query Stats
-#     runs-on: ubuntu-latest
+jobs:
+  query-stats:
+    name: Query Stats
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/test-version'
 
-#     steps:
-#       - name: Checkout source
-#         uses: actions/checkout@v4
-#         with:
-#           submodules: true
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-#       - name: Setup Bun
-#         uses: oven-sh/setup-bun@v1
-#         with:
-#           bun-version: latest
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
-#       - name: Install dependencies
-#         run: bun install --frozen-lockfile
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-#       - name: Get Deposits, Liquidations and Interest Reward Events
-#         run: bun run src/scripts/query-stability-pools.ts
-#         env:
-#           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-#           CHAIN_RPC_URL: ${{ secrets.CHAIN_RPC_URL }}
+      - name: Get Deposits, Liquidations and Interest Reward Events
+        run: bun run src/scripts/query-stability-pools.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CHAIN_RPC_URL: ${{ secrets.CHAIN_RPC_URL }}
       
-#       - name: Calculate Stability Pool APYs
-#         run: bun run src/scripts/calculate-apy.ts
-#         env:
-#           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-#           CHAIN_RPC_URL: ${{ secrets.CHAIN_RPC_URL }}
+      - name: Calculate Stability Pool APYs
+        run: bun run src/scripts/calculate-apy.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CHAIN_RPC_URL: ${{ secrets.CHAIN_RPC_URL }}
