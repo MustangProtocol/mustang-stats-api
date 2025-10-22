@@ -104,12 +104,9 @@ app.get("/events/sp-deposits/branch/:branchId", async (req, res) => {
   }
 });
 
-// Only listen in development/local environment, not in serverless (Vercel)
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log("Mustang Stats API");
-    console.log(`Server listening on http://localhost:${PORT}...`);
-  });
-}
+app.listen(PORT, () => {
+  console.log("Mustang Stats API");
+  console.log(`Server listening on http://localhost:${PORT}...`);
+});
 
 export default app;
