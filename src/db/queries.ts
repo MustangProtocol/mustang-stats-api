@@ -174,7 +174,7 @@ export async function getLatestStats(limitCount: number = 1): Promise<GlobalStat
       pricesMap[p.symbol] = p.price.toString();
     }
 
-    if (limitCount === 1 && globalStatsResult.length > 0) {
+    if ((limitCount === 1 && globalStatsResult.length > 0) || globalStatsResult.length === 0) {
       const stats = globalStatsResult[0];
       return {
         total_bold_supply: stats?.totalBoldSupply.toString(),
