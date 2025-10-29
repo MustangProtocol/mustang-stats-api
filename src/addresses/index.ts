@@ -1,9 +1,9 @@
 export const CONTRACT_ADDRESSES = {
-  collateralRegistry: "0xbe5d451db7dda764d2a0f1c94cad11a10c5afa85",
-  boldToken: "0x6afc1dc17a4dac310e84100578fa8f0699cd43b9",
-  hintHelpers: "0xd4089e6f4c265f4695edf7c1ea423f92ec9603e0",
-  multiTroveGetter: "0x6da0be66951460d517ab6fc407f33d12c4e48a9d",
-  exchangeHelpers: "0x827e3a34e3e078dc103b11284de68fb5a8ddbe49",
+  collateralRegistry: "0x04920e4abbf8a0173f2545f83bfb62beb98aaadd",
+  boldToken: "0xf4e4f7b7a09c50d3cc710151536b88b48422f48b",
+  hintHelpers: "0xece3fa12e6bcbc34291060febf0428855ceb805b",
+  multiTroveGetter: "0x0213a091fdba1e8a67a37f5fbb47f7c93cb61c46",
+  exchangeHelpers: "0x0000000000000000000000000000000000000000",
   governance: "0x0000000000000000000000000000000000000000",
   weth: "0xeb41D53F14Cb9a67907f2b8b5DBc223944158cCb",
   branches: [
@@ -11,85 +11,155 @@ export const CONTRACT_ADDRESSES = {
       collIndex: 0,
       collSymbol: "WETH",
       collToken: "0xeb41D53F14Cb9a67907f2b8b5DBc223944158cCb",
-      addressesRegistry: "0xbdc590125732dcc2173257e7e75a2b7daf0461e0",
-      activePool: "0x791747e5f3904b63fbb5a2a3fd02aced0a93b910",
-      borrowerOperations: "0x2eddb95d264ac2ef904d970f96c383fd073bab2d",
-      collSurplusPool: "0xa4955748abae174f1a7b1a588fa5fea5bd75ce56",
-      defaultPool: "0xe06c6253709e17e0fdfd1f98ad0d05ddec0b18d7",
-      sortedTroves: "0xf6e260032ca09beec649e77fb190cd6b04d584a2",
-      stabilityPool: "0xcf902cecf44a0627f0692669016da682e6737835",
-      troveManager: "0x7a639c9ae64998a1df86d9df13a3d0ba6e94bd51",
-      troveNFT: "0xffa81b5fc69ab7d183992cfb79142a449aa4b69f",
-      metadataNFT: "0x8795403b4d07aa473e842b18557be27c14b0e874",
-      priceFeed: "0x3e4b8ff4b452a42dbd8eef07d0df42e1c173beb5",
-      gasPool: "0x95daccc737deca1d1fba1128f9abf7ac9e83d059",
-      interestRouter: "0x0000000000000000000000000000000000000001",
-      wethZapper: "0x3121c3208ff48e5c0b80831b874e5910f81b52e5",
-      gasCompZapper: "0x0000000000000000000000000000000000000000",
-      leverageZapper: "0x0000000000000000000000000000000000000000"
+      addressesRegistry: "0x4c2d21407e917c290f4336d5bc1db6df0b5f18f1", //
+      activePool: "0xcb0f20f6cc2d72f635af6fab739c87ee2e30462c", //
+      borrowerOperations: "0xd1abdcdaebce8fe6d8c9da3c557cad2d0d0f0dd7", //
+      collSurplusPool: "0x4d69f1a8e6878999fcb1f02e8ddd343ce0617fe0", //
+      defaultPool: "0xc1ae9987367eb1cad327e7633dca02b511bd76a7", //
+      sortedTroves: "0x0140f36f34f497b1bfd4cdce9a7349719c96523b", //
+      stabilityPool: "0xde6dc2fb3a26a791b0f9cfa83166be729860b0ee", //
+      troveManager: "0x13e9927901c3cec3234172addf47581077ccba0b", //
+      troveNFT: "0x90955e36c36568a2a6ca42bfd22a489a3f64d85b", //
+      metadataNFT: "0x094b784f50f3692cd69c9315492f1c31e64b59b1", //
+      priceFeed: "0x633530744e745f483beb3b70f7fdfb1249aee7df", //
+      gasPool: "0x22f05c86344bb7f2580e48b33aa6e5d141e47292", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
+      wethZapper: "0x0000000000000000000000000000000000000000",
+      gasCompZapper: "0xeb2c4fa3240a8f45933417b258fcb544eb70c0c2",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0x0000000000000000000000000000000000000000"
     },
     {
       collIndex: 1,
-      collSymbol: "rETH",
-      collToken: "0x679121f168488185eca6Aaa3871687FF6d38Edb6",
-      addressesRegistry: "0x0265d3576a4a4bd713c3b80e2b6b18ead3c4265f",
-      activePool: "0x1277c10fe3af0405c69e76b1913ceccb385a79e9",
-      borrowerOperations: "0x164d72bbb39a57e265d0c87cb67f20c33185cca7",
-      collSurplusPool: "0x3cfa7a160dc7272b08ea722322b3f628a26a9178",
-      defaultPool: "0x1788d8a9a1f21d81aaa8a2413de58135ac7fa1ab",
-      sortedTroves: "0xfff401554994c7f99e94693990af7d42f55af0ba",
-      stabilityPool: "0x91252d2f16689d65cc11829904dd530df6598306",
-      troveManager: "0x9f479824316c5454529dcf200d3ee31e3ce6eb09",
-      troveNFT: "0x92f22f3bb7b88c6993d9b2df94bcb890059293bd",
-      metadataNFT: "0x15e8d3c51cf8759b15690bd2cfd39d1b02116dcd",
-      priceFeed: "0x0bf89c4e40b163fe0364acebb893c7227816f196",
-      gasPool: "0x17f0f9e92b1b7529eed3b6cd14274a26909c2cbb",
-      interestRouter: "0x0000000000000000000000000000000000000001",
+      collSymbol: "yETH",
+      collToken: "0xA6F89de43315B444114258f6E6700765D08bcd56",
+      addressesRegistry: "0x7d63ab7531d8b1190a5b89ae1a38b0088e27dbdb", //
+      activePool: "0xd0e0f75a53ae486eb124c6e181b0252c805f26c0", //
+      borrowerOperations: "0x70e1f01ce47c966d3bd98aed927c5ed0d54efb6a", //
+      collSurplusPool: "0x2d843efd6f39ed2c6db88a8cabedf6de58db9dc6", //
+      defaultPool: "0x4da6793c24e54b8b6ee0e20712c6ccd72b45c2d9", //
+      sortedTroves: "0xe1e4eedbfb60222727ea148c9bde2193b5da6675", //
+      stabilityPool: "0xa999817b8371b504ea9c13d3fd4d10ae45db7d86", //
+      troveManager: "0xfe474264e7d65005719bac266190db1f8ba8ed64", //
+      troveNFT: "0x2961f681424ed5bced819ecad73e6e02378882f9", //
+      metadataNFT: "0xc16ba743c88b79be5d3122068b28c05612e0f4e7", //
+      priceFeed: "0xc0ba91e9b39d44040534de5e2834f19ce6ad5f4c", //
+      gasPool: "0xcd2da7ccf448896c818035c7a1b2201d61d02699", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
       wethZapper: "0x0000000000000000000000000000000000000000",
-      gasCompZapper: "0x069ba7cb9ca94cde694387b206abd30e890d7528",
-      leverageZapper: "0x0000000000000000000000000000000000000000"
+      gasCompZapper: "0x109a5e350c767ea393e94071af0ebf2cb22ff344",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0x0000000000000000000000000000000000000000"
     },
     {
       collIndex: 2,
       collSymbol: "tBTC",
       collToken: "0xa740E6758e309840ffFfe58f749F018386A3b70b",
-      addressesRegistry: "0x4d20d8dae0ed4d1a14ed6a42408e129c3749ac07",
-      activePool: "0x7440a104a0eaad49cf2f002e3e60cbed74d672e0",
-      borrowerOperations: "0xbfcfd53c810dc9fbc7fb237fac70b2d8eae8e5cc",
-      collSurplusPool: "0xadf99b0ad9b822effd896899142a684c34a64b7a",
-      defaultPool: "0x2cf05b84ae88aa72834731e5b1a9cc25cf894670",
-      sortedTroves: "0x7d0975fd02df6af2613d26b2909263c2a9b6e87c",
-      stabilityPool: "0x5259f6e3d48a2d8a228678acf01dbd4c8875b3ed",
-      troveManager: "0x2f323070f32858330ac2291b8ce921228bd2b2c6",
-      troveNFT: "0x889e3c67c74f0192f8b3b9f53b4414f4b06d7fcd",
-      metadataNFT: "0xfd88bca35fd64e2640ac521c238de6b7e6b41a29",
-      priceFeed: "0xe6db69a02f2044efb9952a4197db7f9f3f7da135",
-      gasPool: "0x9b01df231fa3377737a204737930f3ea6064d360",
-      interestRouter: "0x0000000000000000000000000000000000000001",
+      addressesRegistry: "0x54b4dfd03181504672a0ba775c349e1d31cd9649", //
+      activePool: "0x9e3bb586b8f410210835fd132c78ebc156d9fca0", //
+      borrowerOperations: "0x677a5c863490dd6b674b92410c69688135f2d9e1", //
+      collSurplusPool: "0x02472d413251750db1bd6bbd1b9e84d419a4e76c", //
+      defaultPool: "0xa1dbe43b1220bc9f3367c29ed1003a7c01aec7dc", //
+      sortedTroves: "0x27de1849a74f868d57f960546acc76eabb59b6f1", //
+      stabilityPool: "0x50a1b3b63b27219ebb363a5ee4d9e24ef0fc23b1", //
+      troveManager: "0x0a66df058fb462458a10f01393d6f2118104fe8a", //
+      troveNFT: "0x2f1f3efc79c4a7def428c0cd5b22f0e3586593b7", //
+      metadataNFT: "0x99aaf05a6fc91592b5bbd344f8c2e76df1a61b15", //
+      priceFeed: "0x41a6323e7d7469b555c89b8aba301ac42432f9e4", //
+      gasPool: "0x4d16679409d4dae2b71dc9d4eb22333a2b8b92cb", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
       wethZapper: "0x0000000000000000000000000000000000000000",
-      gasCompZapper: "0xed871ea195a059e4a596a21b9ea3f4038b3313e2",
-      leverageZapper: "0x0000000000000000000000000000000000000000"
+      gasCompZapper: "0x0f9375c6819018d2e1433a7e65e16d914b989c24",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0x0000000000000000000000000000000000000000"
     },
     {
       collIndex: 3,
       collSymbol: "SAGA",
-      collToken: "0x1e34fb2a338142a501aff776da2ad8d919272320",
-      addressesRegistry: "0xf68f61b25ba43c554820ccaf8d88594cb408ebaa",
-      activePool: "0xcd96e0ee51e1f75b8ceb59cfbdfaae84a06c8dbf",
-      borrowerOperations: "0xa89f6f6d3436348d5d01341ff5e456dc299a1a46",
-      collSurplusPool: "0xdc83131e20cce000dd40e482203b0ffc833f63e5",
-      defaultPool: "0xb56c7d5d52f0b280296466c4a3d09df8e1154a18",
-      sortedTroves: "0x0ffef436e4893a26484816352950d7751624b4fb",
-      stabilityPool: "0xba8f09ab2b255063b55a00bcd19e61207fc587c2",
-      troveManager: "0xd4a0bfd801c6d8a22393bd596b5ef60881d57680",
-      troveNFT: "0x7818dfb5c0fb0dc584d8f5e3bc3024822a63c48c",
-      metadataNFT: "0xe1ab7363ec02b9085cd711ec65723fdc9f90770f",
-      priceFeed: "0x146eb2ffa92145133dbf4ad627af58adbc47cd87",
-      gasPool: "0x5a1fafd78539cbe63f21d7d03dce6c35345d0183",
-      interestRouter: "0x0000000000000000000000000000000000000001",
+      collToken: "0xdaa7957701f7f2b4462756d511999f5d5d77cfdb", // WrappedToken address
+      addressesRegistry: "0xce85847bd75f9f126e3b3efdc987c895a48614b5", //
+      activePool: "0x30cb9e6cdcc749cf5805deb4f209cc4b95e4fbea", //
+      borrowerOperations: "0xb349f0225752380d0a1b6463799bf8f099b4e11e", //
+      collSurplusPool: "0x2ad2fa004ad1280a48691e2a8d50fc295bda5fad", //
+      defaultPool: "0x70f00a209e2a30b363b396357a13a0b7bb14e1b4", //
+      sortedTroves: "0xd11efdd6f4811e5c67b8d0c9978606e097930bca", //
+      stabilityPool: "0x638e183dcf7913374addc1330d0c020ca9459c11", //
+      troveManager: "0x4eafce7e6054bce0868678802ec61f9ab075ca1a", //
+      troveNFT: "0xd594e7961f64c49d1eb01321f7c57509e4b97169", //
+      metadataNFT: "0x2ea18402ca9abdaebfdef8df7699cd150af04e16", //
+      priceFeed: "0x006db9341a2f747684d31ace72a77c994dfb64f8", //
+      gasPool: "0xab8d9e04b99d6b5055137e7be7e30aa2d3f1a0f7", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
       wethZapper: "0x0000000000000000000000000000000000000000",
-      gasCompZapper: "0xde7d70349661f420ebe3eaea582f0fdc106c6f74",
-      leverageZapper: "0x0000000000000000000000000000000000000000"
-    }
+      gasCompZapper: "0x0000000000000000000000000000000000000000",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0xa71a15a5376c409254a9bbf852eeb5355483d9b4"
+    },
+    {
+      collIndex: 4,
+      collSymbol: "stATOM",
+      collToken: "0x3bb716e0ec015b65f0058de951795308c32dd977", // WrappedToken address
+      addressesRegistry: "0xcf7e28abb54b7c306061b83058fb8c3f535a921a", //
+      activePool: "0x4abdee73201a47d31528b34e43f53381846e7183", //
+      borrowerOperations: "0xf9339df2bf05a3548afe304c7992480c7701a754", //
+      collSurplusPool: "0xca809ed097349c7f707c4cf0ec29e1e9ed749e68", //
+      defaultPool: "0xee28ddffbbc322eb08b0bc0d4544c4bb4444e861", //
+      sortedTroves: "0xf2a8cb619daa589a964f912ae138324c3743301d", //
+      stabilityPool: "0xd624541380cbc7ccfd50de071cf415453a5d9e9f", //
+      troveManager: "0xdcd96430e273ec8764ae3f50c67a150bd9bb3390", //
+      troveNFT: "0x5d5e93100f494efb1410b737b58ed8098898c379", //
+      metadataNFT: "0xa45350f5ceacd2ef14b035faecd4d42281e5a642", //
+      priceFeed: "0x4cb650983800723fe13ce1483c89c1d22ba85aa9", //
+      gasPool: "0x73377be318c5c9961538d16748d501d46d4c197f", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
+      wethZapper: "0x0000000000000000000000000000000000000000",
+      gasCompZapper: "0x0000000000000000000000000000000000000000",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0x7a348acd40155794def1951cc21d369c1cd19641"
+    },
+    {
+      collIndex: 5,
+      collSymbol: "KING",
+      collToken: "0x58d9fbBc6037dedfBA99cAfA28e4C371b795ad97",
+      addressesRegistry: "0xe6f3f507b044fd92680a02fb87e0913fda37ad20", //
+      activePool: "0x90c1e0de750b0287f2dd5a4c065eb950b5792f19", //
+      borrowerOperations: "0xc86a2221fb969f50914666222c7a2420dae793e0", //
+      collSurplusPool: "0x0cd19d190eaf8e4780093e69b9208579ce20a9b6", //
+      defaultPool: "0xec8c02deadde926ed1e0f269a8a4552a4df238ab", //
+      sortedTroves: "0xe460a878061637cdf13b1205231234f7d215e25f", //
+      stabilityPool: "0x711e0c24c5c7a8b07ee58db6638348189b74f61b", //
+      troveManager: "0xa8fc7de1015c113b8f2dba58cc5e0e846fbaf74a", //
+      troveNFT: "0x8ad64e9a10da54d18af5152e45b3b833cd7aba8c", //
+      metadataNFT: "0xd37b9edb362539a7ab14174f68d6049dc71879e8", //
+      priceFeed: "0x8824680c771813421210ef39bb5e56586208d40d", //
+      gasPool: "0x2ca89111ee03c829aadaa1debc169eea71b40105", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
+      wethZapper: "0x0000000000000000000000000000000000000000",
+      gasCompZapper: "0x45f7ccd8062ad129d26dc8ad4d0eed179b315cc7",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0x0000000000000000000000000000000000000000"
+    },
+    {
+      collIndex: 6,
+      collSymbol: "yUSD",
+      collToken: "0x839e7e610108Cf3DCc9b40329db33b6E6bc9baCE",
+      addressesRegistry: "0x6e3c69c548c2c96bd81f6ff7383314cf2de0e957", //
+      activePool: "0xb1da53a9869c555dd7bc8e1f7cd81bfde6dd2bf7", //
+      borrowerOperations: "0x2d221d3368a935a0d6f5eea6dca9be1f16963e35", //
+      collSurplusPool: "0xbdccd84bdc6ae92dd97ac70ee6f2db06f091d203", //
+      defaultPool: "0xfafce30c8dfbb005b98ba27667f6b7c3d543aa19", //
+      sortedTroves: "0xb3cdd548c90508f112248ef24b56ce69fac8d09a", //
+      stabilityPool: "0xdb1304a9739f9b2e9578ecbb52cef53ee10f0165", //
+      troveManager: "0x6a08df8ffc74baac2ad49317f1972be5c5cb28c6", //
+      troveNFT: "0x1ff471e1f88c7f42c7f1be5ab980e27b9e08224c", //
+      metadataNFT: "0x7f5c494026495060ce5922530d12628162e2c784", //
+      priceFeed: "0x7fd478468e272168601dcfcdc57474692adaf422", //
+      gasPool: "0xb0eb75cbe453d69ae7283b0e6f1388bc19c9c0a8", //
+      interestRouter: "0x92A857b519F73783E27642c0f4A5DBAc8953e66B",
+      wethZapper: "0x0000000000000000000000000000000000000000",
+      gasCompZapper: "0x87d781e632c1da292c2526bbbed84d8d785dec53",
+      leverageZapper: "0x0000000000000000000000000000000000000000",
+      wrappedTokenZapper: "0x0000000000000000000000000000000000000000"
+    },
   ],
 }
