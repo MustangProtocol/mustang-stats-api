@@ -12,7 +12,6 @@ jobs:
   query-stats:
     name: Query Stats
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/test-version'
 
     steps:
       - name: Checkout source
