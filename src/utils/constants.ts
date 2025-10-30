@@ -1,5 +1,5 @@
-import { mainnet, saga } from "viem/chains";
+import { saga } from "viem/chains";
 
-export const ORIGIN_BLOCK = 23540528n;
+export const ORIGIN_BLOCK = 5236533n;
 
-export const CHAIN = mainnet;
+export const CHAIN = saga;
