@@ -1,6 +1,6 @@
 import type { Address } from "viem";
 
-export type CollIndex = 0 | 1 | 2 | 3;
+export type CollIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type TroveId = `0x${string}`;
 export type PrefixedTroveId = `${CollIndex}:${TroveId}`;
 export type CollateralSymbol = "ETH" | "WETH" | "YETH" | "TBTC" | "SAGA" | "STATOM" | "KING" | "YUSD";
