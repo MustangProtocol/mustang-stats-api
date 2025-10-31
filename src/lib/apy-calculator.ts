@@ -72,12 +72,12 @@ export async function calculateApyForBranch(
 
     // Calculate sum of interest rewards
     const totalInterestRewardsBigInt = interestRewards.reduce((sum, reward) => {
-      return sum + BigInt(reward.amount.toString());
+      return sum + BigInt(parseInt(reward.amount.toString()));
     }, BigInt(0));
 
     // Calculate sum of (collSentToSP * price)
     const totalLiquidationRewardsBigInt = liquidations.reduce((sum, liquidation) => {
-      const collValue = BigInt(liquidation.collSentToSP.toString()) * BigInt(liquidation.price.toString());
+      const collValue = BigInt(parseInt(liquidation.collSentToSP.toString())) * BigInt(parseInt(liquidation.price.toString()));
       return sum + collValue;
     }, BigInt(0));
 

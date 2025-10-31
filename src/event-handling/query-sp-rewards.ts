@@ -22,10 +22,9 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createContractEventFilter({
+  const filter = await client.createEventFilter({
     address: contracts.BoldToken.address,
-    abi: [parseAbiItem('event Transfer(address indexed from,address indexed to,uint256 value)')],
-    eventName: 'Transfer',
+    event: parseAbiItem('event Transfer(address indexed from,address indexed to,uint256 value)'),
     strict: true,
     fromBlock,
     toBlock: latestBlock,
@@ -35,12 +34,18 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
     }
   });
 
-  const events = await client.getContractEvents(filter);
+  const events = await client.getFilterLogs({ filter });
 
   console.log("Found", events.length, "interest reward minted (ERC20 transfer) events");
 
-  const recentLogs = await Promise.all(events.map(async event => {
-    const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
+  const recentLogs = await Promise.all(events.map(async (event, i) => {
+    let block;
+    try {
+      block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
+    } catch (error) {
+      console.log("Error getting block for event", i, error);
+      block = null;
+    }
     return {
       branchId: contracts.collaterals.findIndex(collateral => isAddressEqual(collateral.contracts.StabilityPool.address, event.args.to)) as CollIndex,
       stabilityPool: event.args.to,
@@ -79,21 +84,26 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createContractEventFilter({
+  const filter = await client.createEventFilter({
     address: contracts.collaterals.map(collateral => collateral.contracts.TroveManager.address),
-    abi: TroveManager,
-    eventName: 'Liquidation',
+    event: TroveManager.find(event => event.type === "event" && event.name === 'Liquidation'),
     strict: true,
     fromBlock,
     toBlock: latestBlock,
   });
 
-  const events = await client.getContractEvents(filter);
+  const events = await client.getFilterLogs({ filter });
 
   console.log("Found", events.length, "liquidation events");
 
-  const recentLogs = await Promise.all(events.map(async event => {
-    const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
+  const recentLogs = await Promise.all(events.map(async (event, i) => {
+    let block;
+    try {
+      block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
+    } catch (error) {
+      console.log("Error getting block for event", i, error);
+      block = null;
+    }
     return {
       debtOffsetBySP: event.args._debtOffsetBySP.toString(),
       debtRedistributed: event.args._debtRedistributed.toString(),
