@@ -3,15 +3,18 @@ import type { Address } from "viem";
 export type CollIndex = 0 | 1 | 2 | 3;
 export type TroveId = `0x${string}`;
 export type PrefixedTroveId = `${CollIndex}:${TroveId}`;
-export type CollateralSymbol = "ETH" | "WETH" | "RETH" | "TBTC" | "SAGA";
+export type CollateralSymbol = "ETH" | "WETH" | "YETH" | "TBTC" | "SAGA" | "STATOM" | "KING" | "YUSD";
 
 export type TokenSymbol =
   | "MUST"
   | "ETH"
   | "WETH"
-  | "RETH"
+  | "YETH"
   | "TBTC"
   | "SAGA"
+  | "STATOM"
+  | "KING"
+  | "YUSD"
 
 export type Token = {
   name: string;
