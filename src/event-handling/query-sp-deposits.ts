@@ -7,6 +7,7 @@ import { getDb } from '@/src/db/connection';
 import { eventQueryState, spDepositEvents, liquidationLogs, interestRewardsLogs, spDepositSnapshots } from '@/src/db/schema';
 import { and, eq, gte, lte, SQL } from 'drizzle-orm';
 import type { InterestRewardLog, LiquidationLogs, SPDepositUpdatedLogs } from './types';
+import { StabilityPool } from '../abi/StabilityPool';
 
 const EVENT_TYPE = 'SP_DEPOSIT_UPDATED';
 
@@ -96,15 +97,16 @@ export async function queryStabilityPoolDepositUpdatedEvents() {
   const fromBlock = queryState.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
   
-  const filter = await client.createEventFilter({
+  const filter = await client.createContractEventFilter({
     address: contracts.collaterals.map(collateral => collateral.contracts.StabilityPool.address),
-    event: parseAbiItem('event DepositUpdated(address indexed _depositor,uint256 _newDeposit,uint256 _stashedColl,uint256 _snapshotP,uint256 _snapshotS,uint256 _snapshotB,uint256 _snapshotScale)'),
+    abi: StabilityPool,
+    eventName: 'DepositUpdated',
     strict: true,
     fromBlock,
     toBlock: latestBlock
   });
 
-  const events = await client.getFilterLogs({ filter });
+  const events = await client.getContractEvents(filter);
 
   const recentLogs = await Promise.all(events.map(async event => {
     const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;

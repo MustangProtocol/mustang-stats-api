@@ -1,5 +1,5 @@
 import { saga } from "viem/chains";
 
-export const ORIGIN_BLOCK = 5236533n;
+export const ORIGIN_BLOCK = 5440267n;
 
 export const CHAIN = saga;

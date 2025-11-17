@@ -3,7 +3,7 @@ import { getPublicClient } from '@/src/utils/client';
 import { getContracts } from '@/src/lib/contracts';
 import { ORIGIN_BLOCK } from '../utils/constants';
 import type { InterestRewardLog, LiquidationLogs } from './types';
-import { isAddressEqual, parseAbiItem, zeroAddress } from 'viem';
+import { erc20Abi, isAddressEqual, parseAbiItem, zeroAddress } from 'viem';
 import { getEventQueryStateByType, updateEventQueryStateInDb } from './db';
 import { saveInterestRewardsToDatabase, saveLiquidationEventsToDatabase } from './query-sp-deposits';
 import type { CollIndex } from '../types';
@@ -22,9 +22,12 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createEventFilter({
+  console.log("Querying interest reward minted events from block", fromBlock, "to block", latestBlock);
+
+  const filter = await client.createContractEventFilter({
     address: contracts.BoldToken.address,
-    event: parseAbiItem('event Transfer(address indexed from,address indexed to,uint256 value)'),
+    abi: erc20Abi,
+    eventName: 'Transfer',
     strict: true,
     fromBlock,
     toBlock: latestBlock,
@@ -34,7 +37,7 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
     }
   });
 
-  const events = await client.getFilterLogs({ filter });
+  const events = await client.getContractEvents(filter);
 
   console.log("Found", events.length, "interest reward minted (ERC20 transfer) events");
 
@@ -84,15 +87,16 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createEventFilter({
+  const filter = await client.createContractEventFilter({
     address: contracts.collaterals.map(collateral => collateral.contracts.TroveManager.address),
-    event: TroveManager.find(event => event.type === "event" && event.name === 'Liquidation'),
+    abi: TroveManager,
+    eventName: 'Liquidation',
     strict: true,
     fromBlock,
     toBlock: latestBlock,
   });
 
-  const events = await client.getFilterLogs({ filter });
+  const events = await client.getContractEvents(filter);
 
   console.log("Found", events.length, "liquidation events");
 
