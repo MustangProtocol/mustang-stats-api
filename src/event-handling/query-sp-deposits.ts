@@ -1,4 +1,5 @@
-import { isAddressEqual, parseAbiItem } from 'viem';
+import { isAddressEqual } from 'viem';
+import type { Address, Hash } from 'viem';
 import type { CollIndex } from '@/src/types';
 import { getPublicClient } from '@/src/utils/client';
 import { getContracts } from '@/src/lib/contracts';
@@ -6,12 +7,21 @@ import { ORIGIN_BLOCK } from '../utils/constants';
 import { getDb } from '@/src/db/connection';
 import { eventQueryState, spDepositEvents, liquidationLogs, interestRewardsLogs, spDepositSnapshots } from '@/src/db/schema';
 import { and, eq, gte, lte, SQL } from 'drizzle-orm';
-import type { InterestRewardLog, LiquidationLogs, SPDepositUpdatedLogs } from './types';
+import type {
+  DepositUpdatedEventLog,
+  DepositUpdatedQueryResult,
+  EventQueryState,
+  InterestRewardLog,
+  LiquidationLogs,
+  SPDepositUpdatedLogs,
+  StabilityPoolSnapshot,
+} from './types';
 import { StabilityPool } from '../abi/StabilityPool';
 
 const EVENT_TYPE = 'SP_DEPOSIT_UPDATED';
+const LOGS_BLOCK_CHUNK = 9000n;
 
-export async function getStabilityPoolTotalDepositsAndCollBalances() {
+export async function getStabilityPoolTotalDepositsAndCollBalances(): Promise<StabilityPoolSnapshot[]> {
   const client = getPublicClient();
   const contracts = getContracts();
 
@@ -44,7 +54,7 @@ export async function getStabilityPoolTotalDepositsAndCollBalances() {
   const latestBlock = await client.getBlockNumber();
   const block = await client.getBlock({ blockNumber: latestBlock });
 
-  const data = contracts.collaterals.map((collateral, index) => ({
+  const data: StabilityPoolSnapshot[] = contracts.collaterals.map((collateral, index) => ({
     branchId: collateral.collIndex,
     stabilityPool: collateral.contracts.StabilityPool.address,
     totalBoldDeposits: results[index * 2]!.toString(),
@@ -56,7 +66,7 @@ export async function getStabilityPoolTotalDepositsAndCollBalances() {
   return data;
 }
 
-export async function queryAndSaveStabilityPoolTotalDepositsAndCollBalancesToDatabase() {
+export async function queryAndSaveStabilityPoolTotalDepositsAndCollBalancesToDatabase(): Promise<void> {
   const db = getDb();
   const data = await getStabilityPoolTotalDepositsAndCollBalances();
 
@@ -77,7 +87,7 @@ export async function queryAndSaveStabilityPoolTotalDepositsAndCollBalancesToDat
   }
 }
 
-export async function queryAndLogStabilityPoolDepositUpdatedEvents() {
+export async function queryAndLogStabilityPoolDepositUpdatedEvents(): Promise<DepositUpdatedQueryResult> {
   const lastQueriedData = await queryStabilityPoolDepositUpdatedEvents();
   
   if (lastQueriedData.logs.length > 0) {
@@ -88,41 +98,53 @@ export async function queryAndLogStabilityPoolDepositUpdatedEvents() {
   return lastQueriedData;
 }
 
-export async function queryStabilityPoolDepositUpdatedEvents() {
+export async function queryStabilityPoolDepositUpdatedEvents(): Promise<DepositUpdatedQueryResult> {
   const client = getPublicClient();
   const contracts = getContracts();
 
-  let queryState = await getEventQueryState(EVENT_TYPE);
+  const queryState = await getEventQueryState(EVENT_TYPE);
 
   const fromBlock = queryState.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
   
-  const filter = await client.createContractEventFilter({
-    address: contracts.collaterals.map(collateral => collateral.contracts.StabilityPool.address),
-    abi: StabilityPool,
-    eventName: 'DepositUpdated',
-    strict: true,
-    fromBlock,
-    toBlock: latestBlock
-  });
+  const events: DepositUpdatedEventLog[] = [];
+  let currentFromBlock = fromBlock;
+  while (currentFromBlock <= latestBlock) {
+    const currentToBlock = currentFromBlock + LOGS_BLOCK_CHUNK < latestBlock
+      ? currentFromBlock + LOGS_BLOCK_CHUNK
+      : latestBlock;
 
-  const events = await client.getContractEvents(filter);
+    const chunkEvents = await client.getContractEvents({
+      address: contracts.collaterals.map(collateral => collateral.contracts.StabilityPool.address),
+      abi: StabilityPool,
+      eventName: 'DepositUpdated',
+      strict: true,
+      fromBlock: currentFromBlock,
+      toBlock: currentToBlock,
+    });
 
-  const recentLogs = await Promise.all(events.map(async event => {
+    events.push(...chunkEvents);
+    currentFromBlock = currentToBlock + 1n;
+  }
+
+  const recentLogs: SPDepositUpdatedLogs[] = await Promise.all(events.map(async event => {
     const block = event.blockNumber ? await client.getBlock({ blockNumber: event.blockNumber }) : null;
+    const { _depositor, _newDeposit, _stashedColl } = event.args ?? {};
     return {
-      depositor: event.args._depositor,
-      depositAmount: event.args._newDeposit.toString(),
-      stashedColl: event.args._stashedColl.toString(),
+      depositor: _depositor as Address,
+      depositAmount: (_newDeposit ?? 0n).toString(),
+      stashedColl: (_stashedColl ?? 0n).toString(),
       blockNumber: event.blockNumber?.toString() ?? '',
       blockTimestamp: block?.timestamp?.toString() ?? '',
-      transactionHash: event.transactionHash,
+      transactionHash: event.transactionHash as Hash,
       sp: {
-        branchId: contracts.collaterals.findIndex(collateral => isAddressEqual(collateral.contracts.StabilityPool.address, event.address)) as CollIndex,
-        address: event.address,
+        branchId: contracts.collaterals.findIndex(collateral =>
+          isAddressEqual(collateral.contracts.StabilityPool.address, event.address as Address),
+        ) as CollIndex,
+        address: event.address as Address,
       }
-    }
-  })) as SPDepositUpdatedLogs[];
+    };
+  }));
 
   return {
     logs: recentLogs,
@@ -132,9 +154,9 @@ export async function queryStabilityPoolDepositUpdatedEvents() {
 }
 
 export async function queryStabilityPoolDepositUpdatedEventsWithinTimestampRange(params?: {
-  fromTimestamp?: number
-  toTimestamp?: number
-}) {
+  fromTimestamp?: number;
+  toTimestamp?: number;
+}): Promise<typeof spDepositEvents.$inferSelect[]> {
   const { fromTimestamp, toTimestamp } = params ?? {};
 
   const db = getDb();
@@ -155,7 +177,7 @@ export async function queryStabilityPoolDepositUpdatedEventsWithinTimestampRange
   return await db.select().from(spDepositEvents).orderBy(spDepositEvents.createdAt);
 }
 
-export async function saveSPDepositedEventsToDatabase(logs: SPDepositUpdatedLogs[]) {
+export async function saveSPDepositedEventsToDatabase(logs: SPDepositUpdatedLogs[]): Promise<void> {
   const db = getDb();
 
   try {
@@ -179,7 +201,7 @@ export async function saveSPDepositedEventsToDatabase(logs: SPDepositUpdatedLogs
   }
 }
 
-export async function saveInterestRewardsToDatabase(logs: InterestRewardLog[]) {
+export async function saveInterestRewardsToDatabase(logs: InterestRewardLog[]): Promise<void> {
   const db = getDb();
   try {
     await db.insert(interestRewardsLogs).values(logs.map(log => ({
@@ -197,7 +219,7 @@ export async function saveInterestRewardsToDatabase(logs: InterestRewardLog[]) {
   }
 }
 
-export async function saveLiquidationEventsToDatabase(logs: LiquidationLogs[]) {
+export async function saveLiquidationEventsToDatabase(logs: LiquidationLogs[]): Promise<void> {
   const db = getDb();
   try {
     await db.insert(liquidationLogs).values(logs.map(log => ({
@@ -222,7 +244,7 @@ export async function saveLiquidationEventsToDatabase(logs: LiquidationLogs[]) {
   }
 }
 
-async function getEventQueryState(eventType: string) {
+async function getEventQueryState(eventType: string): Promise<EventQueryState> {
   const db = getDb();
 
   try {
@@ -252,7 +274,7 @@ async function getEventQueryState(eventType: string) {
   }
 }
 
-async function updateEventQueryState(eventType: string, fromBlock: string, toBlock: string) {
+async function updateEventQueryState(eventType: string, fromBlock: string, toBlock: string): Promise<void> {
   const db = getDb();
 
   try {
