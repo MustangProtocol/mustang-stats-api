@@ -1,5 +1,8 @@
-import type { Address } from "viem"
-import type { CollIndex } from "../types"
+import { erc20Abi } from "viem";
+import type { Address, GetContractEventsReturnType } from "viem";
+import { StabilityPool } from "../abi/StabilityPool";
+import { TroveManager } from "../abi/TroveManager";
+import type { CollIndex } from "../types";
 
 export interface ERC20TransferLogs {
   token: Address,
@@ -48,3 +51,50 @@ export interface LiquidationLogs {
   blockTimestamp: string
   transactionHash: string
 }
+
+export type StabilityPoolSnapshot = {
+  branchId: CollIndex
+  stabilityPool: Address
+  totalBoldDeposits: string
+  collBalance: string
+  blockNumber: string
+  blockTimestamp: string
+}
+
+export type DepositUpdatedQueryResult = {
+  logs: SPDepositUpdatedLogs[]
+  lastQueriedFromBlock: string
+  lastQueriedToBlock: string
+}
+
+export type InterestRewardQueryResult = {
+  logs: InterestRewardLog[]
+  lastQueriedFromBlock: string
+  lastQueriedToBlock: string
+}
+
+export type LiquidationQueryResult = {
+  logs: LiquidationLogs[]
+  lastQueriedFromBlock: string
+  lastQueriedToBlock: string
+}
+
+export type EventQueryState = {
+  lastQueriedFromBlock: string
+  lastQueriedToBlock: string
+}
+
+export type DepositUpdatedEventLog = GetContractEventsReturnType<
+  typeof StabilityPool,
+  'DepositUpdated'
+>[number]
+
+export type TransferEventLog = GetContractEventsReturnType<
+  typeof erc20Abi,
+  'Transfer'
+>[number]
+
+export type LiquidationEventLog = GetContractEventsReturnType<
+  typeof TroveManager,
+  'Liquidation'
+>[number]
