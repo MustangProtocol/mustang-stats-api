@@ -24,10 +24,9 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
 
   console.log("Querying interest reward minted events from block", fromBlock, "to block", latestBlock);
 
-  const filter = await client.createContractEventFilter({
+  const filter = await client.createEventFilter({
     address: contracts.BoldToken.address,
-    abi: erc20Abi,
-    eventName: 'Transfer',
+    event: parseAbiItem('event Transfer(address indexed from,address indexed to,uint256 value)'),
     strict: true,
     fromBlock,
     toBlock: latestBlock,
@@ -37,7 +36,7 @@ export async function queryStabilityPoolInterestRewardMintedEvents() {
     }
   });
 
-  const events = await client.getContractEvents(filter);
+  const events = await client.getFilterLogs({filter});
 
   console.log("Found", events.length, "interest reward minted (ERC20 transfer) events");
 
@@ -87,16 +86,15 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents() {
   const fromBlock = queryState?.lastQueriedToBlock ? BigInt(queryState.lastQueriedToBlock) : ORIGIN_BLOCK;
   const latestBlock = await client.getBlockNumber();
 
-  const filter = await client.createContractEventFilter({
+  const filter = await client.createEventFilter({
     address: contracts.collaterals.map(collateral => collateral.contracts.TroveManager.address),
-    abi: TroveManager,
-    eventName: 'Liquidation',
+    event: parseAbiItem('event Liquidation(uint256 _debtOffsetBySP, uint256 _debtRedistributed, uint256 _boldGasCompensation, uint256 _collGasCompensation, uint256 _collSentToSP, uint256 _collRedistributed, uint256 _collSurplus, uint256 _L_ETH, uint256 _L_boldDebt, uint256 _price)'),
     strict: true,
     fromBlock,
     toBlock: latestBlock,
   });
 
-  const events = await client.getContractEvents(filter);
+  const events = await client.getFilterLogs({filter});
 
   console.log("Found", events.length, "liquidation events");
 
