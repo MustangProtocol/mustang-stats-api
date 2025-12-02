@@ -77,7 +77,7 @@ export async function calculateApyForBranch(
 
     // Calculate sum of (collSentToSP * price)
     const totalLiquidationRewardsBigInt = liquidations.reduce((sum, liquidation) => {
-      const collValue = BigInt(parseInt(liquidation.collSentToSP.toString())) * BigInt(parseInt(liquidation.price.toString()));
+      const collValue = (BigInt(parseInt(liquidation.collSentToSP.toString())) * BigInt(parseInt(liquidation.price.toString()))) / BigInt(10 ** 18);
       return sum + collValue;
     }, BigInt(0));
 
