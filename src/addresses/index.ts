@@ -76,7 +76,7 @@ export const CONTRACT_ADDRESSES = {
     {
       collIndex: 3,
       collSymbol: "SAGA",
-      collToken: "0xdaa7957701f7f2b4462756d511999f5d5d77cfdb", // WrappedToken address
+      collToken: "0xaa5E2Ea42f0A9C3b43F2B7D26eAa2ba17Ae41dAc", // WrappedToken address
       addressesRegistry: "0x1b6b326655f2d03953ed931948475b3fcf0d0fb2",
       activePool: "0x9f98b8b55f94b617a9a96cc778d8d2ffabd5a746",
       borrowerOperations: "0x0bb7c14d34aa27741790c44835bd12cba8d2d1d2",
@@ -98,7 +98,7 @@ export const CONTRACT_ADDRESSES = {
     {
       collIndex: 4,
       collSymbol: "stATOM",
-      collToken: "0x3bb716e0ec015b65f0058de951795308c32dd977", // WrappedToken address
+      collToken: "0x32604F9Ea6c739d0C56b2D01e07a57c7A05ff007", // WrappedToken address
       addressesRegistry: "0xf671dd2de7a19a49e90f5df1cfea7f921a0f0ae2",
       activePool: "0x345a2515860ce84f6966a214eea786eff628c163",
       borrowerOperations: "0x2ac8eb0d574e137e21e8cf313e23bf4b6078bcf4",

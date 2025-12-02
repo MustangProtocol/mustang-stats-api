@@ -14,6 +14,9 @@ export async function getAllDebtPerInterestRate(): Promise<Record<CollIndex, Deb
     1: [],
     2: [],
     3: [],
+    4: [],
+    5: [],
+    6: [],
   }
 
   const output = await client.multicall({

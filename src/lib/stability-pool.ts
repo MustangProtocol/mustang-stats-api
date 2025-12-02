@@ -28,6 +28,9 @@ export async function getStabilityPoolDeposits(): Promise<StabilityPoolDeposit[]
             1: 0n,
             2: 0n,
             3: 0n,
+            4: 0n,
+            5: 0n,
+            6: 0n,
           };
         }
         // Use the latest deposit amount for each branch
