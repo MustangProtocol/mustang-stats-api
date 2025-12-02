@@ -158,7 +158,7 @@ export async function getLatestStats(limitCount: number = 1): Promise<GlobalStat
     // Format response
     const branches: Record<string, BranchStats> = {};
     for (const branch of branchStatsResult) {
-      branches[branch.branchName] = {
+      branches[branch.branchName.toUpperCase()] = {
         branch_id: branch.branchId.toString(),
         branch_name: branch.branchName,
         sp_deposits: branch.spDeposits.toString(),
