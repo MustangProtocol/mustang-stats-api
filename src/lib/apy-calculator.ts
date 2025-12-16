@@ -1,7 +1,7 @@
 import { formatUnits } from 'viem';
 import { getDb } from '../db/connection';
 import { interestRewardsLogs, liquidationLogs, spDepositSnapshots } from '../db/schema';
-import { and, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
 
 export interface ApyCalculationResult {
   branchId: number;
@@ -41,7 +41,7 @@ export async function calculateApyForBranch(
       .from(interestRewardsLogs)
       .where(
         and(
-          ...(branchId !== -1 ? [gte(interestRewardsLogs.branchId, branchId)] : []),
+          ...(branchId !== -1 ? [eq(interestRewardsLogs.branchId, branchId)] : []),
           gte(interestRewardsLogs.blockTimestamp, fromTimestamp),
           lte(interestRewardsLogs.blockTimestamp, toTimestamp)
         )
@@ -64,7 +64,7 @@ export async function calculateApyForBranch(
       .from(spDepositSnapshots)
       .where(
         and(
-          ...(branchId !== -1 ? [gte(spDepositSnapshots.branchId, branchId)] : []),
+          ...(branchId !== -1 ? [eq(spDepositSnapshots.branchId, branchId)] : []),
           gte(spDepositSnapshots.blockTimestamp, fromTimestamp),
           lte(spDepositSnapshots.blockTimestamp, toTimestamp)
         )
@@ -72,12 +72,18 @@ export async function calculateApyForBranch(
 
     // Calculate sum of interest rewards
     const totalInterestRewardsBigInt = interestRewards.reduce((sum, reward) => {
-      return sum + BigInt(parseInt(reward.amount.toString()));
+      const amountStr = reward.amount.toString();
+      // Database stores wei values as "64751264536800.000000000000000000"
+      // Take only integer part before decimal (the actual wei value)
+      const cleanAmount = amountStr.split('.')[0] || '0';
+      return sum + BigInt(cleanAmount);
     }, BigInt(0));
 
     // Calculate sum of (collSentToSP * price)
     const totalLiquidationRewardsBigInt = liquidations.reduce((sum, liquidation) => {
-      const collValue = (BigInt(parseInt(liquidation.collSentToSP.toString())) * BigInt(parseInt(liquidation.price.toString()))) / BigInt(10 ** 18);
+      const collStr = liquidation.collSentToSP.toString().split('.')[0] || '0';
+      const priceStr = liquidation.price.toString().split('.')[0] || '0';
+      const collValue = (BigInt(collStr) * BigInt(priceStr)) / BigInt(10 ** 18);
       return sum + collValue;
     }, BigInt(0));
 
@@ -85,17 +91,22 @@ export async function calculateApyForBranch(
     let averageBoldDepositsBigInt = BigInt(0);
     if (spSnapshots.length > 0) {
       const totalBoldDeposits = spSnapshots.reduce((sum, snapshot) => {
-        return sum + BigInt(Math.floor(Number(snapshot.totalBoldDeposits)) ?? '0');
+        const depositsStr = snapshot.totalBoldDeposits.toString().split('.')[0] || '0';
+        return sum + BigInt(depositsStr);
       }, BigInt(0));
-      averageBoldDepositsBigInt = totalBoldDeposits / BigInt(spSnapshots.length ?? 1);
+      averageBoldDepositsBigInt = totalBoldDeposits / BigInt(spSnapshots.length);
     }
 
     // Calculate APY
     let apyBigInt = BigInt(0);
     if (averageBoldDepositsBigInt > BigInt(0)) {
       const numerator = totalInterestRewardsBigInt + totalLiquidationRewardsBigInt;
-      // Scale up to maintain precision in decimal calculation
-      apyBigInt = (numerator * BigInt(10 ** 18)) / averageBoldDepositsBigInt;
+      const periodDuration = toTimestamp - fromTimestamp;
+      const secondsInYear = BigInt(31536000); // 365 days
+      
+      // Calculate rate for the period, then annualize it
+      const periodRate = (numerator * BigInt(10 ** 18)) / averageBoldDepositsBigInt;
+      apyBigInt = (periodRate * secondsInYear) / periodDuration;
     }
 
     return {
