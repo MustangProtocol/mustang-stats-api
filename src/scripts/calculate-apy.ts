@@ -47,7 +47,7 @@ async function calculateAndUpdateBranchApy() {
       // Calculate 1-year APY
       const oneYearAgo = nowTimestamp - TIME_PERIODS.ONE_YEAR;
       const apyResult1y = await calculateApyForBranch(branch.id, oneYearAgo, nowTimestamp);
-      const apy1yPercentage = formatApyAsPercentage(parseInt(formatApyAsPercentage(apyResult1y.apy)).toString());
+      const apy1yPercentage = formatApyAsPercentage(apyResult1y.apy);
 
       // Calculate current APY (using a recent period or you could use a longer period)
       // For now, using the same as 7-day as the "current" APY
@@ -69,8 +69,8 @@ async function calculateAndUpdateBranchApy() {
       // Update the branch stats in the database
       try {
         await updateBranchStats(branch, {
-          sp_apy: parseInt(formatApyAsPercentage(apyResultCurrent.apy)).toString(),
-          apy_avg: parseInt(formatApyAsPercentage(apyResultCurrent.apy)).toString(),
+          sp_apy: apyResultCurrent.apy,
+          apy_avg: apyResultCurrent.apy,
           sp_apy_avg_1d: apyResult1d.apy,
           sp_apy_avg_7d: apyResult7d.apy,
         });
