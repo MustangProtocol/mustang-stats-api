@@ -32,9 +32,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           CHAIN_RPC_URL: ${{ secrets.CHAIN_RPC_URL }}
+          LOWEST_BLOCK_HEIGHT: ${{ vars.LOWEST_BLOCK_HEIGHT }}
       
       - name: Calculate Stability Pool APYs
         run: bun run src/scripts/calculate-apy.ts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           CHAIN_RPC_URL: ${{ secrets.CHAIN_RPC_URL }}
+          LOWEST_BLOCK_HEIGHT: ${{ vars.LOWEST_BLOCK_HEIGHT }}

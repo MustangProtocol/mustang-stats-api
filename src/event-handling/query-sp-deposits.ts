@@ -17,6 +17,7 @@ import type {
   StabilityPoolSnapshot,
 } from './types';
 import { StabilityPool } from '../abi/StabilityPool';
+import { LOWEST_BLOCK_HEIGHT } from '../utils/env';
 
 const EVENT_TYPE = 'SP_DEPOSIT_UPDATED';
 const LOGS_BLOCK_CHUNK = 9000n;
@@ -108,7 +109,7 @@ export async function queryStabilityPoolDepositUpdatedEvents(): Promise<DepositU
   const latestBlock = await client.getBlockNumber();
   
   const events: DepositUpdatedEventLog[] = [];
-  let currentFromBlock = fromBlock;
+  let currentFromBlock = fromBlock < LOWEST_BLOCK_HEIGHT ? LOWEST_BLOCK_HEIGHT : fromBlock;
   while (currentFromBlock <= latestBlock) {
     const currentToBlock = currentFromBlock + LOGS_BLOCK_CHUNK < latestBlock
       ? currentFromBlock + LOGS_BLOCK_CHUNK
