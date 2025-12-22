@@ -16,6 +16,7 @@ import { getEventQueryStateByType, updateEventQueryStateInDb } from './db';
 import { saveInterestRewardsToDatabase, saveLiquidationEventsToDatabase } from './query-sp-deposits';
 import type { CollIndex } from '../types';
 import { TroveManager } from '../abi/TroveManager';
+import { LOWEST_BLOCK_HEIGHT } from '../utils/env';
 
 const TRANSFER_EVENT_TYPE = 'TRANSFER';
 const LIQUIDATION_EVENT_TYPE = 'LIQUIDATION';
@@ -34,7 +35,7 @@ export async function queryStabilityPoolInterestRewardMintedEvents(): Promise<In
   console.log("Querying interest reward minted events from block", fromBlock, "to block", latestBlock);
 
   const events: TransferEventLog[] = [];
-  let currentFromBlock = fromBlock;
+  let currentFromBlock = fromBlock < LOWEST_BLOCK_HEIGHT ? LOWEST_BLOCK_HEIGHT : fromBlock;
   while (currentFromBlock <= latestBlock) {
     const currentToBlock = currentFromBlock + LOGS_BLOCK_CHUNK < latestBlock
       ? currentFromBlock + LOGS_BLOCK_CHUNK
@@ -109,7 +110,7 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents(): Promise
   const latestBlock = await client.getBlockNumber();
 
   const events: LiquidationEventLog[] = [];
-  let currentFromBlock = fromBlock;
+  let currentFromBlock = fromBlock < LOWEST_BLOCK_HEIGHT ? LOWEST_BLOCK_HEIGHT : fromBlock;
   while (currentFromBlock <= latestBlock) {
     const currentToBlock = currentFromBlock + LOGS_BLOCK_CHUNK < latestBlock
       ? currentFromBlock + LOGS_BLOCK_CHUNK
