@@ -152,7 +152,15 @@ export async function queryStabilityPoolLiquidationRewardMintedEvents(): Promise
       _price,
     } = event.args ?? {};
 
+    const troveManager = event.address;
+
+    const stabilityPool = contracts.collaterals.find(collateral => collateral.contracts.TroveManager.address === troveManager)?.contracts.StabilityPool.address;
+
     return {
+      branchId: contracts.collaterals.findIndex(collateral =>
+        isAddressEqual(collateral.contracts.TroveManager.address, troveManager),
+      ) as CollIndex,
+      stabilityPool: stabilityPool as Address,
       debtOffsetBySP: (_debtOffsetBySP ?? 0n).toString(),
       debtRedistributed: (_debtRedistributed ?? 0n).toString(),
       boldGasCompensation: (_boldGasCompensation ?? 0n).toString(),

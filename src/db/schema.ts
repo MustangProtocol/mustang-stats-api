@@ -57,6 +57,8 @@ export const interestRewardsLogs = pgTable('interest_rewards',
 export const liquidationLogs = pgTable('liquidation_logs',
   {
     id: serial('id').primaryKey(),
+    branchId: integer('branch_id'),
+    stabilityPool: varchar('stability_pool', { length: 255 }),
     debtOffsetBySP: numeric('debt_offset_by_sp', { precision: 50, scale: 18 }).notNull(),
     debtRedistributed: numeric('debt_redistributed', { precision: 50, scale: 18 }).notNull(),
     boldGasCompensation: numeric('bold_gas_compensation', { precision: 50, scale: 18 }).notNull(),

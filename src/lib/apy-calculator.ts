@@ -53,6 +53,7 @@ export async function calculateApyForBranch(
       .from(liquidationLogs)
       .where(
         and(
+          ...(branchId !== -1 ? [eq(liquidationLogs.branchId, branchId)] : []),
           gte(liquidationLogs.blockTimestamp, fromTimestamp),
           lte(liquidationLogs.blockTimestamp, toTimestamp)
         )
