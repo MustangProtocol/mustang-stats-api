@@ -224,6 +224,7 @@ export async function saveLiquidationEventsToDatabase(logs: LiquidationLogs[]): 
   const db = getDb();
   try {
     await db.insert(liquidationLogs).values(logs.map(log => ({
+      stabilityPool: log.stabilityPool as Address,
       debtOffsetBySP: log.debtOffsetBySP,
       debtRedistributed: log.debtRedistributed,
       boldGasCompensation: log.boldGasCompensation,

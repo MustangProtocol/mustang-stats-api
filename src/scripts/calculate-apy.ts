@@ -3,6 +3,7 @@
 import { calculateApyForBranch, formatApyAsPercentage } from '../lib/apy-calculator';
 import { updateBranchStats } from '../db/queries';
 import { getContracts } from '../lib/contracts';
+import { formatUnits } from 'viem';
 
 /**
  * Script to calculate APY for each stability branch and update the database
@@ -55,14 +56,23 @@ async function calculateAndUpdateBranchApy() {
       const apyCurrentPercentage = apy1yPercentage
 
       console.log(`  ├─ 1-Day APY: ${apy1dPercentage}%`);
-      console.log(`  │  └─ Interest Rewards: ${apyResult1d.dataPoints.interestRewardsCount}`);
-      console.log(`  │  └─ Liquidations: ${apyResult1d.dataPoints.liquidationLogsCount}`);
+      console.log(`  │  └─ # of Interest Rewards: ${apyResult1d.dataPoints.interestRewardsCount}`);
+      console.log(`  │  └─ # of Liquidations: ${apyResult1d.dataPoints.liquidationLogsCount}`);
+      console.log(`  │  └─ Total Interest Rewards: ${formatUnits(BigInt(apyResult1d.totalInterestRewards), 18)}`);
+      console.log(`  │  └─ Total Liquidation Rewards: ${formatUnits(BigInt(apyResult1d.totalCollBalance), 18)}`);
+      console.log(`  │  └─ Stability Pool Size: ${formatUnits(BigInt(apyResult1d.totalBoldDepositAvg), 18)}`);
       console.log(`  ├─ 7-Day APY: ${apy7dPercentage}%`);
-      console.log(`  │  └─ Interest Rewards: ${apyResult7d.dataPoints.interestRewardsCount}`);
-      console.log(`  │  └─ Liquidations: ${apyResult7d.dataPoints.liquidationLogsCount}`);
+      console.log(`  │  └─ # of Interest Rewards: ${apyResult7d.dataPoints.interestRewardsCount}`);
+      console.log(`  │  └─ # of Liquidations: ${apyResult7d.dataPoints.liquidationLogsCount}`);
+      console.log(`  │  └─ Total Interest Rewards: ${formatUnits(BigInt(apyResult7d.totalInterestRewards), 18)}`);
+      console.log(`  │  └─ Total Liquidation Rewards: ${formatUnits(BigInt(apyResult7d.totalCollBalance), 18)}`);
+      console.log(`  │  └─ Stability Pool Size: ${formatUnits(BigInt(apyResult7d.totalBoldDepositAvg), 18)}`);
       console.log(`  ├─ 1-Year APY: ${apy1yPercentage}%`);
-      console.log(`  │  └─ Interest Rewards: ${apyResult1y.dataPoints.interestRewardsCount}`);
-      console.log(`  │  └─ Liquidations: ${apyResult1y.dataPoints.liquidationLogsCount}`);
+      console.log(`  │  └─ # of Interest Rewards: ${apyResult1y.dataPoints.interestRewardsCount}`);
+      console.log(`  │  └─ # of Liquidations: ${apyResult1y.dataPoints.liquidationLogsCount}`);
+      console.log(`  │  └─ Total Interest Rewards: ${formatUnits(BigInt(apyResult1y.totalInterestRewards), 18)}`);
+      console.log(`  │  └─ Total Liquidation Rewards: ${formatUnits(BigInt(apyResult1y.totalCollBalance), 18)}`);
+      console.log(`  │  └─ Stability Pool Size: ${formatUnits(BigInt(apyResult1y.totalBoldDepositAvg), 18)}`);
       console.log(`  └─ Current APY (1-year avg): ${apyCurrentPercentage}%`);
       console.log('');
 

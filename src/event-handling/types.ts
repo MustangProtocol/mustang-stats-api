@@ -37,6 +37,8 @@ export interface SPDepositUpdatedLogs {
 }
 
 export interface LiquidationLogs {
+  branchId: CollIndex
+  stabilityPool: Address
   debtOffsetBySP: string
   debtRedistributed: string
   boldGasCompensation: string

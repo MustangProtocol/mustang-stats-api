@@ -53,6 +53,7 @@ export async function calculateApyForBranch(
       .from(liquidationLogs)
       .where(
         and(
+          ...(branchId !== -1 ? [eq(liquidationLogs.branchId, branchId)] : []),
           gte(liquidationLogs.blockTimestamp, fromTimestamp),
           lte(liquidationLogs.blockTimestamp, toTimestamp)
         )
@@ -101,12 +102,15 @@ export async function calculateApyForBranch(
     let apyBigInt = BigInt(0);
     if (averageBoldDepositsBigInt > BigInt(0)) {
       const numerator = totalInterestRewardsBigInt + totalLiquidationRewardsBigInt;
-      const periodDuration = toTimestamp - fromTimestamp;
-      const secondsInYear = BigInt(31536000); // 365 days
+      // const periodDuration = toTimestamp - fromTimestamp;
+      // const secondsInYear = BigInt(31536000); // 365 days
       
-      // Calculate rate for the period, then annualize it
+      // Accrual per given time period
       const periodRate = (numerator * BigInt(10 ** 18)) / averageBoldDepositsBigInt;
-      apyBigInt = (periodRate * secondsInYear) / periodDuration;
+      apyBigInt = periodRate;
+
+      // Calculate rate for the period, then annualize it
+      // apyBigInt = (periodRate * secondsInYear) / periodDuration;
     }
 
     return {
